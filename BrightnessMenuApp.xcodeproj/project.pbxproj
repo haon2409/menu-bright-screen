@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		DA59EF032E8175A0006FD83E /* DisplayServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA59EEFE2E817172006FD83E /* DisplayServices.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		DAA989652E825F0600F63DBC /* setup_appicon.sh in Resources */ = {isa = PBXBuildFile; fileRef = DAA989642E825F0400F63DBC /* setup_appicon.sh */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		DA59EEE12E816E6D006FD83E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,6 +32,8 @@
 		DA59EED02E816E6B006FD83E /* BrightnessMenuApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BrightnessMenuApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA59EEE02E816E6D006FD83E /* BrightnessMenuAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BrightnessMenuAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA59EEEA2E816E6D006FD83E /* BrightnessMenuAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BrightnessMenuAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		DA59EEFE2E817172006FD83E /* DisplayServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DisplayServices.framework; path = ../../../../../System/Library/PrivateFrameworks/DisplayServices.framework; sourceTree = "<group>"; };
+		DAA989642E825F0400F63DBC /* setup_appicon.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = setup_appicon.sh; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -52,6 +59,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DA59EF032E8175A0006FD83E /* DisplayServices.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -75,9 +83,11 @@
 		DA59EEC72E816E6B006FD83E = {
 			isa = PBXGroup;
 			children = (
+				DAA989642E825F0400F63DBC /* setup_appicon.sh */,
 				DA59EED22E816E6B006FD83E /* BrightnessMenuApp */,
 				DA59EEE32E816E6D006FD83E /* BrightnessMenuAppTests */,
 				DA59EEED2E816E6D006FD83E /* BrightnessMenuAppUITests */,
+				DA59EEFD2E817172006FD83E /* Frameworks */,
 				DA59EED12E816E6B006FD83E /* Products */,
 			);
 			sourceTree = "<group>";
@@ -90,6 +100,14 @@
 				DA59EEEA2E816E6D006FD83E /* BrightnessMenuAppUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		DA59EEFD2E817172006FD83E /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				DA59EEFE2E817172006FD83E /* DisplayServices.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -212,6 +230,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DAA989652E825F0600F63DBC /* setup_appicon.sh in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -394,13 +413,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = HF8X37LKF6;
-				ENABLE_APP_SANDBOX = YES;
+				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
-				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSMainStoryboardFile = Main;
@@ -419,6 +439,10 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
+				SYSTEM_FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SYSTEM_LIBRARY_DIR)/PrivateFrameworks",
+				);
 			};
 			name = Debug;
 		};
@@ -427,13 +451,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = HF8X37LKF6;
-				ENABLE_APP_SANDBOX = YES;
+				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
-				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSMainStoryboardFile = Main;
@@ -452,6 +477,10 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
+				SYSTEM_FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SYSTEM_LIBRARY_DIR)/PrivateFrameworks",
+				);
 			};
 			name = Release;
 		};
