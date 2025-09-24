@@ -332,6 +332,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         updateTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(updateBrightness), userInfo: nil, repeats: true)
     }
 
+    func applicationWillTerminate(_ notification: Notification) {
+        // Clean up timer and status item explicitly
+        updateTimer?.invalidate()
+        updateTimer = nil
+        if let item = statusItem {
+            NSStatusBar.system.removeStatusItem(item)
+        }
+    }
+
     @objc func updateBrightness() {
         if let brightness = getCurrentDisplayBrightness() {
             if NSApp.currentEvent?.type != .leftMouseDragged {
