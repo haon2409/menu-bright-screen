@@ -85,6 +85,9 @@ final class MenuBarSliderCell: NSSliderCell {
     var knobBorderColor: NSColor = NSColor.black.withAlphaComponent(0.2)
     var knobBorderWidth: CGFloat = 1.0
 
+    // Slight brighten overlay for the unfilled (right) side
+    var unfilledBrightenColor: NSColor = NSColor.white.withAlphaComponent(0.10)
+
     // Sun icon tuning
     var sunRayCount: Int = 8
     var sunIconColor: NSColor = NSColor.black.withAlphaComponent(0.85)
@@ -103,18 +106,30 @@ final class MenuBarSliderCell: NSSliderCell {
         let fillWidth = max(0, min(aRect.width, knob.midX - aRect.minX))
         let fillRect = NSRect(x: aRect.minX, y: aRect.minY, width: fillWidth, height: aRect.height)
 
+        // Compute the right (unfilled) rect from the knob center to the right edge
+        let rightX = max(aRect.minX, min(knob.midX, aRect.maxX))
+        let rightWidth = max(0, aRect.maxX - rightX)
+        let rightRect = NSRect(x: rightX, y: aRect.minY, width: rightWidth, height: aRect.height)
+
         // Clip to the track shape so the fill inherits rounded corners
         NSGraphicsContext.saveGraphicsState()
         let trackPath = NSBezierPath(roundedRect: aRect, xRadius: aRect.height / 2, yRadius: aRect.height / 2)
         trackPath.addClip()
 
-        // Draw with normal compositing, fully opaque
+        // Draw with normal compositing, fully opaque on the filled side
         let ctx = NSGraphicsContext.current
         let previousOp = ctx?.compositingOperation
         ctx?.compositingOperation = .sourceOver
 
+        // Left (filled) portion: solid white
         fillColor.setFill()
         NSBezierPath(rect: fillRect).fill()
+
+        // Right (unfilled) portion: slightly brighten to improve visibility
+        if rightRect.width > 0.0 {
+            unfilledBrightenColor.setFill()
+            NSBezierPath(rect: rightRect).fill()
+        }
 
         if let prev = previousOp {
             ctx?.compositingOperation = prev
