@@ -85,6 +85,10 @@ final class MenuBarSliderCell: NSSliderCell {
     var knobBorderColor: NSColor = NSColor.black.withAlphaComponent(0.2)
     var knobBorderWidth: CGFloat = 1.0
 
+    // Sun icon tuning
+    var sunRayCount: Int = 8
+    var sunIconColor: NSColor = NSColor.black.withAlphaComponent(0.85)
+
     override func drawBar(inside aRect: NSRect, flipped: Bool) {
         // Draw default track first
         super.drawBar(inside: aRect, flipped: flipped)
@@ -113,7 +117,8 @@ final class MenuBarSliderCell: NSSliderCell {
         NSGraphicsContext.restoreGraphicsState()
     }
 
-    // Draw a fully opaque knob that completely covers the track beneath it.
+    // Draw a fully opaque knob that completely covers the track beneath it,
+    // with a sun icon that scales with the current brightness value.
     override func drawKnob() {
         let flipped = controlView?.isFlipped ?? false
         var rect = knobRect(flipped: flipped).insetBy(dx: 0.5, dy: 0.5)
@@ -129,11 +134,14 @@ final class MenuBarSliderCell: NSSliderCell {
         let previousOp = ctx?.compositingOperation
         ctx?.compositingOperation = .sourceOver
 
-        // Opaque fill
-        let radius = rect.height / 2
+        // Opaque circular knob
+        let radius = min(rect.width, rect.height) / 2
         let path = NSBezierPath(roundedRect: rect, xRadius: radius, yRadius: radius)
         knobFillColor.setFill()
         path.fill()
+
+        // Draw sun glyph inside the knob
+        drawSunGlyph(in: rect)
 
         // Optional subtle border to define edges on light backgrounds
         knobBorderColor.setStroke()
@@ -144,6 +152,49 @@ final class MenuBarSliderCell: NSSliderCell {
             ctx?.compositingOperation = prev
         }
         NSGraphicsContext.restoreGraphicsState()
+    }
+
+    private func drawSunGlyph(in knobRect: NSRect) {
+        // Brightness fraction 0...1 from the cell's current value
+        let range = max(0.0001, maxValue - minValue)
+        let fraction = CGFloat((doubleValue - minValue) / range) // 0...1
+
+        // Geometry
+        let center = CGPoint(x: knobRect.midX, y: knobRect.midY)
+        let R = min(knobRect.width, knobRect.height) / 2.0 - knobBorderWidth // inner padding
+        let coreRadius = max(1.0, R * (0.30 + 0.10 * fraction))              // center disk
+        let rayLength = max(0.8, R * (0.18 + 0.32 * fraction))               // grows with brightness
+        let rayInner = coreRadius + 0.8
+        let rayOuter = min(R - 0.7, coreRadius + rayLength)
+        let rayThickness = max(0.9, 1.0 + 0.6 * fraction)
+
+        // Choose icon color; keep strong contrast against white knob
+        let iconColor: NSColor = sunIconColor
+        iconColor.set()
+
+        // Draw rays
+        let raysPath = NSBezierPath()
+        raysPath.lineCapStyle = .round
+        raysPath.lineWidth = rayThickness
+
+        let count = max(6, sunRayCount)
+        let twoPi = CGFloat.pi * 2
+        for i in 0..<count {
+            let angle = twoPi * CGFloat(i) / CGFloat(count)
+            let dx = cos(angle)
+            let dy = sin(angle)
+            let p0 = CGPoint(x: center.x + dx * rayInner, y: center.y + dy * rayInner)
+            let p1 = CGPoint(x: center.x + dx * rayOuter, y: center.y + dy * rayOuter)
+            raysPath.move(to: p0)
+            raysPath.line(to: p1)
+        }
+        raysPath.stroke()
+
+        // Draw center disk
+        let diskRect = CGRect(x: center.x - coreRadius, y: center.y - coreRadius, width: coreRadius * 2, height: coreRadius * 2)
+        let diskPath = NSBezierPath(ovalIn: diskRect)
+        iconColor.setFill()
+        diskPath.fill()
     }
 }
 
@@ -269,8 +320,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Initial update
         updateBrightness()
 
-        // Periodic update (every 5 seconds) to reflect external changes
-        updateTimer = Timer.scheduledTimer(timeInterval: 5.0, target: self, selector: #selector(updateBrightness), userInfo: nil, repeats: true)
+        // Periodic update (every 1 second) to reflect external changes
+        updateTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(updateBrightness), userInfo: nil, repeats: true)
     }
 
     @objc func updateBrightness() {
