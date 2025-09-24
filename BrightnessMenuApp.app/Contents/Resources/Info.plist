@@ -4,5 +4,7 @@
 <dict>
 	<key>CFBundleIconFile</key>
 	<string>AppIcon</string>
+    <!-- Menu bar–only app: no Dock icon -->
+    <key>LSUIElement</key> <true/>
 </dict>
 </plist>
