@@ -4,21 +4,29 @@
 <dict>
 	<key>files</key>
 	<dict>
+		<key>Resources/AppIcon.icns</key>
+		<data>
+		fYkUq8mpQn+GgaeZptSYwEM1I7o=
+		</data>
 		<key>Resources/Base.lproj/Main.storyboardc/Info.plist</key>
 		<data>
-		ZrJS6OX25hVFXArUTZZGLSE+qBw=
+		jiRGDjUW4Mjrvva7aB0OB6FXp6M=
 		</data>
 		<key>Resources/Base.lproj/Main.storyboardc/MainMenu.nib</key>
 		<data>
-		mnDk4QgwdOWCiUZ6cWRVVJK2PoM=
+		d0/bahnAD9id3SvQZ5Wbq+AZH3U=
 		</data>
 		<key>Resources/Base.lproj/Main.storyboardc/NSWindowController-B8D-0N-5wS.nib</key>
 		<data>
-		BUXs+t0tlJe20bPu+clejDdc+g0=
+		/gQ9YXhVQ9fBLMG8LOsfxBUVdnQ=
 		</data>
 		<key>Resources/Base.lproj/Main.storyboardc/XfG-lQ-9wD-view-m2S-Jp-Qdl.nib</key>
 		<data>
 		dcwLIQgURpAxDkq7VP/MHVMjaZg=
+		</data>
+		<key>Resources/Info.plist</key>
+		<data>
+		0G3GjE4epUhqW3tlxDhfLJUj6OE=
 		</data>
 		<key>Resources/setup_appicon.sh</key>
 		<data>
@@ -27,25 +35,32 @@
 	</dict>
 	<key>files2</key>
 	<dict>
+		<key>Resources/AppIcon.icns</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			tcSFss9o6YQYPltRwBc30+JYG+rMju0tof93Q+4wdX8=
+			</data>
+		</dict>
 		<key>Resources/Base.lproj/Main.storyboardc/Info.plist</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			XI9STFxES+QlTqlqOwf68MYb/WQ3Dm941r24ybVoOF8=
+			uC+8AbBduQTaZBTUXI5Kw9Hyne3RXuvJuuiJt3kcdXg=
 			</data>
 		</dict>
 		<key>Resources/Base.lproj/Main.storyboardc/MainMenu.nib</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			D13RwjK6bl8zHMFLu+nIjElgQy5TUeEEKOfKDdb2Sio=
+			BQkKB/pX0/YtmjleB48N6QYY2M3vVDuwnrmnXaShRIE=
 			</data>
 		</dict>
 		<key>Resources/Base.lproj/Main.storyboardc/NSWindowController-B8D-0N-5wS.nib</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			uVkpa6vsElHIh4QIL8Co7rsWi60Py2Qrh8gRWapWyIQ=
+			H0S605fb9gazT6ZNvb+pZCErU1165teRC8cbMTNYvMk=
 			</data>
 		</dict>
 		<key>Resources/Base.lproj/Main.storyboardc/XfG-lQ-9wD-view-m2S-Jp-Qdl.nib</key>
@@ -53,6 +68,13 @@
 			<key>hash2</key>
 			<data>
 			E5TydeWynoe7ikUTfd2H87wFEu4leIDPGUwzqgAM40o=
+			</data>
+		</dict>
+		<key>Resources/Info.plist</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			OaPxb8ySuXZ9t9IYvTcF6BU5+BO6T4fI/CfGRGV+GBI=
 			</data>
 		</dict>
 		<key>Resources/setup_appicon.sh</key>

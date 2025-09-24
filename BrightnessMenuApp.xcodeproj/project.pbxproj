@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		DA59EF032E8175A0006FD83E /* DisplayServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA59EEFE2E817172006FD83E /* DisplayServices.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		DA8475AA2E83995700EA9F30 /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = DA8475A92E83995700EA9F30 /* AppIcon.icns */; };
 		DAA989652E825F0600F63DBC /* setup_appicon.sh in Resources */ = {isa = PBXBuildFile; fileRef = DAA989642E825F0400F63DBC /* setup_appicon.sh */; };
 /* End PBXBuildFile section */
 
@@ -33,6 +34,7 @@
 		DA59EEE02E816E6D006FD83E /* BrightnessMenuAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BrightnessMenuAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA59EEEA2E816E6D006FD83E /* BrightnessMenuAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BrightnessMenuAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA59EEFE2E817172006FD83E /* DisplayServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DisplayServices.framework; path = ../../../../../System/Library/PrivateFrameworks/DisplayServices.framework; sourceTree = "<group>"; };
+		DA8475A92E83995700EA9F30 /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
 		DAA989642E825F0400F63DBC /* setup_appicon.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = setup_appicon.sh; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -83,6 +85,7 @@
 		DA59EEC72E816E6B006FD83E = {
 			isa = PBXGroup;
 			children = (
+				DA8475A92E83995700EA9F30 /* AppIcon.icns */,
 				DAA989642E825F0400F63DBC /* setup_appicon.sh */,
 				DA59EED22E816E6B006FD83E /* BrightnessMenuApp */,
 				DA59EEE32E816E6D006FD83E /* BrightnessMenuAppTests */,
@@ -231,6 +234,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DAA989652E825F0600F63DBC /* setup_appicon.sh in Resources */,
+				DA8475AA2E83995700EA9F30 /* AppIcon.icns in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -422,6 +426,9 @@
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BrightnessMenuApp/Info.plist;
+				INFOPLIST_KEY_CFBundleIconFile = AppIcon;
+				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSMainStoryboardFile = Main;
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
@@ -460,6 +467,9 @@
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BrightnessMenuApp/Info.plist;
+				INFOPLIST_KEY_CFBundleIconFile = AppIcon;
+				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSMainStoryboardFile = Main;
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;

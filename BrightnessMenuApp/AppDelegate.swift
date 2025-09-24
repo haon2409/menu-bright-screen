@@ -89,6 +89,11 @@ final class MenuBarSliderCell: NSSliderCell {
     var sunRayCount: Int = 8
     var sunIconColor: NSColor = NSColor.black.withAlphaComponent(0.85)
 
+    // Consider the slider "at max" when it is very close to its maximum.
+    private var isAtMax: Bool {
+        return doubleValue >= (maxValue - 0.5) // tolerance for rounding/dragging
+    }
+
     override func drawBar(inside aRect: NSRect, flipped: Bool) {
         // Draw default track first
         super.drawBar(inside: aRect, flipped: flipped)
@@ -134,14 +139,18 @@ final class MenuBarSliderCell: NSSliderCell {
         let previousOp = ctx?.compositingOperation
         ctx?.compositingOperation = .sourceOver
 
+        // Determine colors based on brightness
+        let knobColor: NSColor = isAtMax ? NSColor.systemYellow : knobFillColor
+        let iconColor: NSColor = sunIconColor // keep icon black even at max
+
         // Opaque circular knob
         let radius = min(rect.width, rect.height) / 2
         let path = NSBezierPath(roundedRect: rect, xRadius: radius, yRadius: radius)
-        knobFillColor.setFill()
+        knobColor.setFill()
         path.fill()
 
         // Draw sun glyph inside the knob
-        drawSunGlyph(in: rect)
+        drawSunGlyph(in: rect, iconColor: iconColor)
 
         // Optional subtle border to define edges on light backgrounds
         knobBorderColor.setStroke()
@@ -154,7 +163,7 @@ final class MenuBarSliderCell: NSSliderCell {
         NSGraphicsContext.restoreGraphicsState()
     }
 
-    private func drawSunGlyph(in knobRect: NSRect) {
+    private func drawSunGlyph(in knobRect: NSRect, iconColor: NSColor) {
         // Brightness fraction 0...1 from the cell's current value
         let range = max(0.0001, maxValue - minValue)
         let fraction = CGFloat((doubleValue - minValue) / range) // 0...1
@@ -168,8 +177,7 @@ final class MenuBarSliderCell: NSSliderCell {
         let rayOuter = min(R - 0.7, coreRadius + rayLength)
         let rayThickness = max(0.9, 1.0 + 0.6 * fraction)
 
-        // Choose icon color; keep strong contrast against white knob
-        let iconColor: NSColor = sunIconColor
+        // Choose icon color; keep strong contrast against knob
         iconColor.set()
 
         // Draw rays
