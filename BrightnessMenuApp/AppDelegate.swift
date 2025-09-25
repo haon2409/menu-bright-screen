@@ -2,6 +2,7 @@ import Cocoa
 import IOKit
 import IOKit.graphics
 import Darwin
+import ObjectiveC.runtime
 
 // Private bridge for DisplayServices (Apple private framework).
 // Not App Store–safe, but works reliably on modern MacBook panels.
@@ -77,9 +78,115 @@ private final class DisplayServicesBridge {
     }
 }
 
+// Private bridge for CoreBrightness (Night Shift).
+// Uses ObjC runtime to call CBBlueLightClient without headers.
+private final class NightShiftBridge {
+    static let shared = NightShiftBridge()
+
+    // Keep a minimal mirror for documentation; we won't pass this across the ABI.
+    private struct CBBlueLightStatus {
+        var enabled: Bool = false
+        var active: Bool = false
+        var strength: Float = 0.0
+        var mode: Int32 = 0
+    }
+
+    private let handle: UnsafeMutableRawPointer?
+    private let client: AnyObject?
+
+    private init() {
+        // Load the private framework so NSClassFromString can find the class.
+        handle = dlopen("/System/Library/PrivateFrameworks/CoreBrightness.framework/CoreBrightness", RTLD_LAZY)
+        if let cls = NSClassFromString("CBBlueLightClient") as? NSObject.Type {
+            client = cls.init()
+        } else {
+            client = nil
+        }
+    }
+
+    deinit {
+        if let h = handle {
+            dlclose(h)
+        }
+    }
+
+    // Returns (enabled preference, active now) if available.
+    func getStatus() -> (enabled: Bool, active: Bool)? {
+        guard let c = client else { return nil }
+        let sel = NSSelectorFromString("getBlueLightStatus:")
+        guard c.responds(to: sel) else { return nil }
+
+        guard let method = class_getInstanceMethod(object_getClass(c), sel) else { return nil }
+        let imp = method_getImplementation(method)
+        typealias Fn = @convention(c) (AnyObject, Selector, UnsafeMutableRawPointer) -> Bool
+        let f = unsafeBitCast(imp, to: Fn.self)
+
+        // Use a generously sized scratch buffer to avoid layout/size mismatches across OS versions.
+        var buf = [UInt8](repeating: 0, count: 64)
+        let ok = buf.withUnsafeMutableBytes { raw -> Bool in
+            guard let base = raw.baseAddress else { return false }
+            return f(c, sel, base)
+        }
+        guard ok else { return nil }
+
+        // Interpret only the first two bytes as booleans (enabled, active).
+        let enabled = buf[0] != 0
+        let active  = buf[1] != 0
+        return (enabled, active)
+    }
+
+    @discardableResult
+    func setEnabled(_ enabled: Bool) -> Bool {
+        guard let c = client else { return false }
+        let sel = NSSelectorFromString("setEnabled:")
+        guard c.responds(to: sel) else { return false }
+        guard let method = class_getInstanceMethod(object_getClass(c), sel) else { return false }
+        let imp = method_getImplementation(method)
+        typealias Fn = @convention(c) (AnyObject, Selector, Bool) -> Bool
+        let f = unsafeBitCast(imp, to: Fn.self)
+        return f(c, sel, enabled)
+    }
+
+    @discardableResult
+    func setStrength(_ strength: Float, commit: Bool) -> Bool {
+        guard let c = client else { return false }
+        let sel = NSSelectorFromString("setStrength:commit:")
+        guard c.responds(to: sel) else { return false }
+        guard let method = class_getInstanceMethod(object_getClass(c), sel) else { return false }
+        let imp = method_getImplementation(method)
+        typealias Fn = @convention(c) (AnyObject, Selector, Float, Bool) -> Bool
+        let f = unsafeBitCast(imp, to: Fn.self)
+        return f(c, sel, strength, commit)
+    }
+
+    // Toggle Night Shift "now" by forcing strength on/off.
+    @discardableResult
+    func setActiveNow(_ active: Bool) -> Bool {
+        if active {
+            // Ensure preference is enabled, then force a visible strength.
+            _ = setEnabled(true)
+            _ = setStrength(0.5, commit: true) // 50% warmth; adjust if you prefer
+        } else {
+            // Turn it fully off and clear preference.
+            _ = setStrength(0.0, commit: true)
+            _ = setEnabled(false)
+        }
+        // Verify
+        if let s = getStatus() {
+            return s.active == active
+        }
+        return false
+    }
+}
+
 // Custom NSSliderCell that draws the filled (left) portion as fully opaque white
 // and draws a fully opaque knob so the track does not show through.
 final class MenuBarSliderCell: NSSliderCell {
+    enum IconKind {
+        case sun
+        case moon
+    }
+
     var fillColor: NSColor = .white // solid, non-dynamic
     var knobFillColor: NSColor = .white
     var knobBorderColor: NSColor = NSColor.black.withAlphaComponent(0.2)
@@ -91,6 +198,11 @@ final class MenuBarSliderCell: NSSliderCell {
     // Sun icon tuning
     var sunRayCount: Int = 8
     var sunIconColor: NSColor = NSColor.black.withAlphaComponent(0.85)
+
+    // Icon selection (switches between sun and moon)
+    var iconKind: IconKind = .sun {
+        didSet { controlView?.needsDisplay = true }
+    }
 
     // Consider the slider "at max" when it is very close to its maximum.
     private var isAtMax: Bool {
@@ -138,7 +250,7 @@ final class MenuBarSliderCell: NSSliderCell {
     }
 
     // Draw a fully opaque knob that completely covers the track beneath it,
-    // with a sun icon that scales with the current brightness value.
+    // with a sun or moon icon that scales with the current brightness value.
     override func drawKnob() {
         let flipped = controlView?.isFlipped ?? false
         var rect = knobRect(flipped: flipped).insetBy(dx: 0.5, dy: 0.5)
@@ -164,8 +276,13 @@ final class MenuBarSliderCell: NSSliderCell {
         knobColor.setFill()
         path.fill()
 
-        // Draw sun glyph inside the knob
-        drawSunGlyph(in: rect, iconColor: iconColor)
+        // Draw sun or moon glyph inside the knob
+        switch iconKind {
+        case .sun:
+            drawSunGlyph(in: rect, iconColor: iconColor)
+        case .moon:
+            drawMoonGlyph(in: rect, iconColor: iconColor, knobBackground: knobColor)
+        }
 
         // Optional subtle border to define edges on light backgrounds
         knobBorderColor.setStroke()
@@ -218,6 +335,32 @@ final class MenuBarSliderCell: NSSliderCell {
         let diskPath = NSBezierPath(ovalIn: diskRect)
         iconColor.setFill()
         diskPath.fill()
+    }
+
+    private func drawMoonGlyph(in knobRect: NSRect, iconColor: NSColor, knobBackground: NSColor) {
+        // Brightness fraction 0...1 from the cell's current value
+        let range = max(0.0001, maxValue - minValue)
+        let fraction = CGFloat((doubleValue - minValue) / range) // 0...1
+
+        // Geometry similar to sun size, but crescent-shaped
+        let center = CGPoint(x: knobRect.midX, y: knobRect.midY)
+        let R = min(knobRect.width, knobRect.height) / 2.0 - knobBorderWidth
+        let outerRadius = max(1.5, R * (0.55 + 0.10 * fraction))
+        let innerRadius = outerRadius * (0.80 - 0.10 * fraction) // thinner at higher brightness
+        let offset = outerRadius * (0.40 + 0.10 * fraction)      // shift to create crescent
+
+        // Outer circle
+        let outerRect = CGRect(x: center.x - outerRadius, y: center.y - outerRadius, width: outerRadius * 2, height: outerRadius * 2)
+        let outerPath = NSBezierPath(ovalIn: outerRect)
+        iconColor.setFill()
+        outerPath.fill()
+
+        // Cutout circle in knob background color to create crescent
+        let cutoutCenter = CGPoint(x: center.x + offset, y: center.y)
+        let cutoutRect = CGRect(x: cutoutCenter.x - innerRadius, y: cutoutCenter.y - innerRadius, width: innerRadius * 2, height: innerRadius * 2)
+        let cutoutPath = NSBezierPath(ovalIn: cutoutRect)
+        knobBackground.setFill()
+        cutoutPath.fill()
     }
 }
 
@@ -314,6 +457,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var updateTimer: Timer?
     private var contextMenu: NSMenu!
 
+    // Night Shift integration
+    private var nightShiftMenuItem: NSMenuItem!
+
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         // Make this a menu bar–only app (no Dock icon, no app menu)
         NSApp.setActivationPolicy(.accessory)
@@ -335,13 +481,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         // Context menu (right-click / Control-click)
         let menu = NSMenu()
+
+        // Night Shift toggle item
+        let nsItem = NSMenuItem(title: "Night Shift", action: #selector(toggleNightShift(_:)), keyEquivalent: "")
+        nsItem.target = self
+        menu.addItem(nsItem)
+        nightShiftMenuItem = nsItem
+
         let quitItem = NSMenuItem(title: "Quit", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         menu.addItem(quitItem)
         contextMenu = menu
         sliderView.contextMenu = menu
 
-        // Initial update
+        // Initial updates
         updateBrightness()
+        updateNightShiftUI()
 
         // Periodic update (every 1 second) to reflect external changes
         updateTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(updateBrightness), userInfo: nil, repeats: true)
@@ -367,12 +521,50 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             sliderView.slider.isEnabled = false
             sliderView.toolTip = "Screen Brightness: N/A"
         }
+
+        // Also keep Night Shift icon in sync
+        updateNightShiftUI()
     }
 
     @objc private func sliderChanged(_ sender: NSSlider) {
         let percent = sender.floatValue
         _ = setCurrentDisplayBrightness(percent: percent)
         sliderView.toolTip = String(format: "Screen Brightness: %.0f%%", percent)
+    }
+
+    // MARK: - Night Shift
+
+    private func updateNightShiftUI() {
+        guard let status = NightShiftBridge.shared.getStatus() else {
+            // Unknown/unavailable: default to sun icon, unchecked and disabled menu item
+            nightShiftMenuItem?.state = .off
+            nightShiftMenuItem?.isEnabled = false
+            setKnobIcon(isNightActive: false)
+            return
+        }
+        nightShiftMenuItem?.isEnabled = true
+        // Reflect current mode (active) instead of the preference (enabled).
+        nightShiftMenuItem?.state = status.active ? .on : .off
+        setKnobIcon(isNightActive: status.active)
+    }
+
+    private func setKnobIcon(isNightActive: Bool) {
+        if let cell = sliderView.slider.cell as? MenuBarSliderCell {
+            cell.iconKind = isNightActive ? .moon : .sun
+            sliderView.slider.needsDisplay = true
+        }
+    }
+
+    @objc private func toggleNightShift(_ sender: Any?) {
+        if let status = NightShiftBridge.shared.getStatus() {
+            let targetActive = !status.active
+            _ = NightShiftBridge.shared.setActiveNow(targetActive)
+        } else {
+            // If status unknown, try to force ON, otherwise do nothing.
+            _ = NightShiftBridge.shared.setActiveNow(true)
+        }
+        // Update immediately; periodic timer will keep it in sync thereafter
+        updateNightShiftUI()
     }
 
     // MARK: - Brightness
